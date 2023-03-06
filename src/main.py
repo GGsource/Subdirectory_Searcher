@@ -227,14 +227,15 @@ if __name__ == '__main__':
 
 
 # Features to add:
-# - Make custom look with semi-transparent background
-# - Make custom title bar
-# - Add a search bar
-# - Add a context menu to the items in the grid, so that you can right click on an item and open it in app, in explorer, or delete it
-# - Add ability to filter by folder names
-# - Add some visual indication if items next to each other are from the same folder
-# - Add ability to sort by folder name
-# - Replace opening image with a built in image viewer
-# - Exclude directories from the list, otherwise they show up as blank images
-# - Make gifs auto-play
-# - Put play button over videos if applicable
+# TODO: Make custom look with semi-transparent background
+# TODO: Make custom title bar
+# TODO: Add a search bar
+# TODO: Add a context menu to the items in the grid, so that you can right click on an item and open it in app, in explorer, or delete it
+# TODO: Add ability to filter by folder names
+# TODO: Add some visual indication if items next to each other are from the same folder
+# TODO: Add ability to sort by folder name
+# TODO: Replace opening image with a built in image viewer
+# TODO: Exclude directories from the list, otherwise they show up as blank images
+# TODO: Make gifs auto-play
+# TODO: Put play button over videos if applicable
+# TODO: Add "copy" button to context menu to copy the image to the clipboard
