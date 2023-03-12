@@ -14,11 +14,11 @@ screenX, screenY = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
 windowX, windowY = 1600, 900
 placementX = int((screenX/2) - (windowX/2))
 placementY = int((screenY/2) - (windowY/2))
-
 # Path to folder holding all other folders
 mugPath = "M:\OneDrive - University of Illinois Chicago\Mugs\\"
-#
 listLimit = 100
+titleBarX = 0
+titleBarY = 0
 
 #############################################################################################
 #############################################################################################
@@ -32,19 +32,27 @@ def getFiles():
     listOfFiles = glob.glob(mugPath+"*\\*\\*\\*") + \
         glob.glob(mugPath+"\\*\\*\\*") + \
         glob.glob(mugPath+"\\*\\*")
+    # Exclude the folders
+    listOfFiles = [file for file in listOfFiles if os.path.isfile(file)]
     return sorted(listOfFiles, key=os.path.getctime, reverse=True)
 
-# PrintList -
-# Prints out a list one item at a time.
+# openItem -
+# Opens the file that was double clicked
 
 
-def printList(list):
-    for item in list:
-        print(item)
-
+def openItem(item, isRelative=False):
+    if (not isRelative):
+        relativePath = item.text().split(" ", 1)
+        fullPath = mugPath+relativePath[1]
+    else:
+        fullPath = f"{mugPath}{item}"
+    print(f"Opening: '{fullPath}'")
+    os.startfile(fullPath, 'open')
 
 # addHundred -
 # Adds 100 more items to the list
+
+
 def addHundred(givenGrid, givenOrderedFiles):
     global listLimit
     i = listLimit - 100
@@ -64,12 +72,20 @@ def addThumbnail(givenGrid, givenFile, ndx, rowLen):
     fullPath = mugPath+givenFile
     # Create an instance of an image from file in img folder
     image = QPixmap(fullPath)
+
+    # Save the image's original size to be used later
+    originalSize = image.size()
+
     # Crop the image to a square, centered on the image
     image = cropAtCenter(image)
     # Resize the image to 200x200
     image = image.scaled(200, 200, Qt.KeepAspectRatio)
     # Add the image's extension type to the bottom right corner of the image
     image = addImageType(image, fullPath.split(".")[-1])
+
+    # Now, add the original dimensions right above the extension type, also with a dark blue rectangle behind it
+    image = addDimentions(image, originalSize)
+
     # Modify the image to have rounded corners
     image = roundImage(image, 15)
     # Add the image to the grid by creating a label and setting the image
@@ -129,18 +145,64 @@ def addImageType(givenImage, givenType):
     painter.end()
     return givenImage
 
-# openItem -
-# Opens the file that was double clicked
+# addDimentions -
+# Adds the original dimensions right above the extension type, also with a dark blue rectangle behind it
 
 
-def openItem(item, isRelative=False):
-    if (not isRelative):
-        relativePath = item.text().split(" ", 1)
-        fullPath = mugPath+relativePath[1]
-    else:
-        fullPath = f"{mugPath}{item}"
-    print(f"Opening: '{fullPath}'")
-    os.startfile(fullPath, 'open')
+def addDimentions(givenImage, givenSize):
+    painter = QPainter(givenImage)
+    painter.setPen(QPen(QColor(0, 0, 0, 0)))
+    painter.setBrush(QBrush(QColor(0, 0, 0, 100)))
+    painter.drawRect(0, givenImage.height() - 20, 100, 20)
+    painter.setPen(QPen(Qt.white))
+    painter.setFont(QFont("Arial", 12))
+    painter.drawText(0, givenImage.height() - 20, 100, 20,
+                     Qt.AlignCenter, str(givenSize.width()) + "x" + str(givenSize.height()))
+    painter.end()
+    return givenImage
+
+# addDragAbility -
+# Adds the ability to drag the title bar and move the window
+
+
+def addDragAbility(draggableRegionWidget, window):
+    # Create an instance of QtWidgets.QWidget
+    draggableRegion = QWidget(draggableRegionWidget)
+    # Set the draggable region's size to be the same as the draggable region widget
+    draggableRegion.setFixedSize(draggableRegionWidget.size())
+    # Set the draggable region's position to be the same as the draggable region widget
+    draggableRegion.move(draggableRegionWidget.pos())
+    # Set the draggable region's cursor to be a move cursor
+    draggableRegion.setCursor(Qt.SizeAllCursor)
+    # first save the position of the mouse with titleBarX and titleBarY
+    draggableRegion.mousePressEvent = lambda event: saveMousePos(event, window)
+    # then move the window to the new position
+    draggableRegion.mouseMoveEvent = lambda event: moveWindow(
+        event, window)
+
+
+# saveMousePos -
+# Saves the position of the mouse when the mouse is pressed
+def saveMousePos(event, window):
+    global titleBarX, titleBarY
+    titleBarX = event.globalX()
+    titleBarY = event.globalY()
+
+# moveWindow -
+# Moves the window to the new position
+
+
+def moveWindow(event, window):
+    global titleBarX, titleBarY
+    # Get the new position of the mouse
+    newX = event.globalX()
+    newY = event.globalY()
+    # Move the window to the new position
+    window.move(window.x() + (newX - titleBarX),
+                window.y() + (newY - titleBarY))
+    # Update the position of the mouse
+    titleBarX = newX
+    titleBarY = newY
 
 #############################################################################################
 #############################################################################################
@@ -194,28 +256,70 @@ def main():
     # Create a vertical box layout and add the list and button to it
     vBox = QVBoxLayout(window)
 
-    # Create a horizontal box layout and add the list and a new grid to it
-    # hBox = QHBoxLayout()
-    # hBox.addWidget(listWidget)
-
-    # hBox.addWidget(scrollArea)
-
     # Create a custom title bar that be used to close the program
-    titleBar = QWidget()
+    titleBar = QWidget(objectName="titleBar")
     titleBar.setFixedHeight(30)
-    titleBarLayout = QHBoxLayout()
+    titleBarLayout = QHBoxLayout(objectName="titleBarLayout")
     titleBar.setLayout(titleBarLayout)
-    closeButton = QPushButton("X")
+    # Create application icon to go in the title bar
+    appIcon = QLabel()
+    appIcon.setPixmap(QPixmap("res/icons/laugh.png").scaled(
+        30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+    titleBarLayout.addWidget(appIcon)
+    # Create title section of the title bar, which is draggable
+    titleSection = QWidget(objectName="titleSection")
+    titleSectionLayout = QHBoxLayout(objectName="titleSectionLayout")
+    titleSection.setLayout(titleSectionLayout)
+    titleText = QLabel("MugBox", objectName="titleText")
+    titleText.setEnabled(False)
+    titleSectionLayout.addWidget(titleText)
+    titleBarLayout.addWidget(titleSection)
+    # set its width to take up the rest of the title bar
+    titleSectionLayout.setStretch(0, 1)
+    titleText.setAlignment(Qt.AlignCenter)
+    # the title is slightly clipped at the bottom of the title bar, fix it
+    titleSectionLayout.setContentsMargins(0, 0, 0, 0)
+    # Now we can make the title section draggable
+    addDragAbility(titleBar, window)
+    # FIXME: Only left half of title bar is draggable
+
+    # Create a minimize button
+    minimizeButton = QPushButton("—", objectName="minimizeButton")
+    minimizeButton.setProperty("class", "titleBarButton")
+    minimizeButton.setFixedSize(30, 30)
+    minimizeButton.clicked.connect(window.showMinimized)
+    # Make the minimize action be animated
+    minimizeButton.setProperty("animate", True)
+    titleBarLayout.addWidget(minimizeButton)
+    # Create a close button
+    closeButton = QPushButton("✕", objectName="closeButton")
+    closeButton.setProperty("class", "titleBarButton")
     closeButton.setFixedSize(30, 30)
     closeButton.clicked.connect(app.quit)
     titleBarLayout.addWidget(closeButton)
+    # Align the close button to the right
+    titleBarLayout.setAlignment(Qt.AlignRight)
+    # the button still gets clipped off the bottom of the title bar, fix it
+    titleBarLayout.setContentsMargins(0, 0, 0, 0)
+    # remove the padding between the minimize and close buttons
+    titleBarLayout.setSpacing(0)
 
-    vBox.addWidget(titleBar)
-    vBox.addWidget(scrollArea)  # Add the list to the layout
-    vBox.addWidget(addHundredButton)  # Add the button to the layout
+    # Put all 3 in a container which can be colored
+    container = QWidget(objectName="container")
+    containerLayout = QVBoxLayout(objectName="containerLayout")
+    container.setLayout(containerLayout)
+    containerLayout.addWidget(titleBar)
+    containerLayout.addWidget(scrollArea)
+    containerLayout.addWidget(addHundredButton)
+    vBox.addWidget(container)
+
+    # Make the window semi-transparent
+    window.setAttribute(Qt.WA_TranslucentBackground, True)
+    window.setWindowFlags(Qt.FramelessWindowHint)
 
     # Set application icon for the taskbar
     app.setWindowIcon(QIcon("res/icons/laugh.png"))
+    app.setStyleSheet(open("res/styles/style.css").read())
 
     # Show the window and run the application
     window.show()
@@ -227,15 +331,16 @@ if __name__ == '__main__':
 
 
 # Features to add:
-# TODO: Make custom look with semi-transparent background
-# TODO: Make custom title bar
+# DONE: Make custom look with semi-transparent background
+# DONE: Make custom title bar
 # TODO: Add a search bar
 # TODO: Add a context menu to the items in the grid, so that you can right click on an item and open it in app, in explorer, or delete it
 # TODO: Add ability to filter by folder names
 # TODO: Add some visual indication if items next to each other are from the same folder
 # TODO: Add ability to sort by folder name
 # TODO: Replace opening image with a built in image viewer
-# TODO: Exclude directories from the list, otherwise they show up as blank images
+# DONE: Exclude directories from the list, otherwise they show up as blank images
 # TODO: Make gifs auto-play
 # TODO: Put play button over videos if applicable
 # TODO: Add "copy" button to context menu to copy the image to the clipboard
+# IDEA: move add 100 button to the left side of the window and add settings below it

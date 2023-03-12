@@ -1,0 +1,35 @@
+QWidget#titleBar {
+    background-color: transparent;
+}
+.titleBarButton {
+    /* Slightly lighter than titlebar by default */
+    background-color: transparent;
+    color: #7a7a7a;
+    border-radius: 2px;
+    font-size: 20px;
+}
+
+QPushButton#minimizeButton:hover {
+    /* Make slightly lighter than titlebar's color */
+    background-color: rgba(255, 255, 255, 0.45);
+    color: white;
+}
+
+QPushButton#closeButton:hover {
+    background-color: rgba(212, 37, 37, 0.8);
+    color: white;
+}
+
+QWidget#titleSection {
+    /* background-color: #374781; */
+}
+QLabel#titleText {
+    /* background-color: #4e67c0; */
+    color: #7a7a7a;
+    font-size: 20px;
+}
+
+QWidget#container {
+    background-color: rgba(45, 46, 57, 0.9);
+    border-radius: 8px;
+}
