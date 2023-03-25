@@ -1,35 +1,97 @@
+/* Application Container */
+QWidget#container {
+    background-color: rgba(30, 31, 34, 0.9);
+    border-radius: 8px;
+}
+
+/* Title Bar */
 QWidget#titleBar {
     background-color: transparent;
 }
 .titleBarButton {
     /* Slightly lighter than titlebar by default */
     background-color: transparent;
-    color: #7a7a7a;
+    color: rgba(122, 122, 122, 1);
     border-radius: 2px;
     font-size: 20px;
 }
 
 QPushButton#minimizeButton:hover {
     /* Make slightly lighter than titlebar's color */
-    background-color: rgba(255, 255, 255, 0.45);
+    background-color: rgba(255, 255, 255, 0.2);
     color: white;
 }
 
 QPushButton#closeButton:hover {
-    background-color: rgba(212, 37, 37, 0.8);
+    background-color: rgba(212, 37, 37, 0.7);
     color: white;
 }
 
-QWidget#titleSection {
-    /* background-color: #374781; */
-}
+/* QWidget#titleSection {
+    background-color: #374781;
+} */
 QLabel#titleText {
     /* background-color: #4e67c0; */
-    color: #7a7a7a;
+    color: rgba(122, 122, 122, 1);
     font-size: 20px;
 }
 
-QWidget#container {
-    background-color: rgba(45, 46, 57, 0.9);
+/* Scroll Area - Central area of the grid */
+QScrollArea#scrollArea {
+    background-color: transparent; /* ScrollArea background */
+    border: none;
+}
+/* scrollbar background? */
+QScrollArea#scrollArea>QWidget {
+    background-color: rgba(17, 20, 31, 0.5);
+    border-radius: 4px;
+}
+/* Part of scrollArea background */
+QScrollArea#scrollArea>QWidget>QWidget {
+    background-color: transparent;
+}
+/* Individual Image background color */
+/* QScrollArea#scrollArea>QWidget>QWidget>QWidget {
+    background-color: rgba(0,0,255,0.1); 
+} */
+
+/* Scroll Bar - Bar that moves the grid*/
+QScrollBar:vertical {
+    width: 10px;
+    margin: 0px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical {
+    background-color: rgba(10, 13, 22, 0.5);
+    min-height: 10px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical:hover {
+    background-color: rgba(255, 49, 66, 0.8);
+}
+QScrollBar::handle:vertical:pressed {
+    background-color: rgba(221, 37, 52, 0.8);
+}
+
+/* ScrollBar Remove Top & Bottom Buttons */
+QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
+    height: 0px;
+}
+
+/* Reset Arrow */
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical, QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+
+/* Add Hundred Button */
+QPushButton#addHundredButton {
+    background-color: rgba(44, 47, 56, 0.7);
     border-radius: 8px;
+    color: rgba(122, 122, 122, 1);
+    font-size: 20px;
+}
+QPushButton#addHundredButton:hover {
+    background-color: rgba(255, 49, 66, 0.7);
+    color: white;
 }

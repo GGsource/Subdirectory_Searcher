@@ -15,7 +15,7 @@ windowX, windowY = 1600, 900
 placementX = int((screenX/2) - (windowX/2))
 placementY = int((screenY/2) - (windowY/2))
 # Path to folder holding all other folders
-mugPath = "M:\OneDrive - University of Illinois Chicago\Mugs\\"
+mugPath = "M:\OneDrive\Mugs\\"
 listLimit = 100
 titleBarX = 0
 titleBarY = 0
@@ -234,8 +234,9 @@ def main():
     # Create a grid layout
     grid = QGridLayout()
     # Creat scroll area for grid
-    scrollArea = QScrollArea()
+    scrollArea = QScrollArea(objectName="scrollArea")
     scrollArea.setWidgetResizable(True)
+    scrollArea.setAutoFillBackground(True)
     # Create a widget to hold the grid
     client = QWidget()
     client.setLayout(grid)
@@ -246,7 +247,8 @@ def main():
     addHundred(grid, newestOrderedFiles)
 
     # Create a button to add 100 more items to the list
-    addHundredButton = QPushButton(parent=window, text="Add 100 more to list")
+    addHundredButton = QPushButton(
+        parent=window, text="Add 100 more to list", objectName="addHundredButton")
     # Connect the button to the addHundred function
     addHundredButton.clicked.connect(
         lambda: addHundred(grid, newestOrderedFiles))
@@ -333,14 +335,26 @@ if __name__ == '__main__':
 # Features to add:
 # DONE: Make custom look with semi-transparent background
 # DONE: Make custom title bar
-# TODO: Add a search bar
+# FIXME: Make title bar properly draggable, currently only the left half is draggable
 # TODO: Add a context menu to the items in the grid, so that you can right click on an item and open it in app, in explorer, or delete it
+# TODO: Add a search bar
 # TODO: Add ability to filter by folder names
 # TODO: Add some visual indication if items next to each other are from the same folder
 # TODO: Add ability to sort by folder name
 # TODO: Replace opening image with a built in image viewer
 # DONE: Exclude directories from the list, otherwise they show up as blank images
+# FIXME: Empty images are still being added to the list, look into this
 # TODO: Make gifs auto-play
 # TODO: Put play button over videos if applicable
 # TODO: Add "copy" button to context menu to copy the image to the clipboard
 # IDEA: move add 100 button to the left side of the window and add settings below it
+# DONE: Make Sroll Area background transparent
+# DONE: Make custom Scroll Bar
+# FIXME: Distinguish app background from scroll area background more. Maybe make the scroll area background a little darker
+# TODO: Add a reload button
+# TODO: Add system for detecting which machine this is.
+# If it is unknown machine then ask for root directory and save machine - directory pair into a map.
+# TODO: Give previews for discord sizes on one of the pages
+# FIXME: Fix image corners and image in general being pixelated
+# TODO: Center the images in the grid
+# TODO: Look into making background acrylic or blur
