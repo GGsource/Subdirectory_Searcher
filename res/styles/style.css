@@ -5,9 +5,9 @@ QWidget#container {
 }
 
 /* Title Bar */
-QWidget#titleBar {
-    background-color: transparent;
-}
+/* QWidget#draggableBar {
+    background-color: rgba(255, 166, 0, 0.377);
+} */
 .titleBarButton {
     /* Slightly lighter than titlebar by default */
     background-color: transparent;

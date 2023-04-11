@@ -11,12 +11,13 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 # To get screen resolution & place window at center of screen
 user32 = ctypes.windll.user32
 screenX, screenY = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-windowX, windowY = 1600, 900
+windowX, windowY = 1440, 810
 placementX = int((screenX/2) - (windowX/2))
 placementY = int((screenY/2) - (windowY/2))
 # Path to folder holding all other folders
 mugPath = "M:\OneDrive\Mugs\\"
 listLimit = 100
+thumnailSize = 190
 titleBarX = 0
 titleBarY = 0
 
@@ -78,8 +79,8 @@ def addThumbnail(givenGrid, givenFile, ndx, rowLen):
 
     # Crop the image to a square, centered on the image
     image = cropAtCenter(image)
-    # Resize the image to 200x200
-    image = image.scaled(200, 200, Qt.KeepAspectRatio)
+    # Resize the image to thumbnailsize x thumbnailsize
+    image = image.scaled(thumnailSize, thumnailSize, Qt.KeepAspectRatio)
     # Add the image's extension type to the bottom right corner of the image
     image = addImageType(image, fullPath.split(".")[-1])
 
@@ -166,24 +167,20 @@ def addDimentions(givenImage, givenSize):
 
 
 def addDragAbility(draggableRegionWidget, window):
-    # Create an instance of QtWidgets.QWidget
-    draggableRegion = QWidget(draggableRegionWidget)
-    # Set the draggable region's size to be the same as the draggable region widget
-    draggableRegion.setFixedSize(draggableRegionWidget.size())
     # Set the draggable region's position to be the same as the draggable region widget
-    draggableRegion.move(draggableRegionWidget.pos())
+    draggableRegionWidget.move(draggableRegionWidget.pos())
     # Set the draggable region's cursor to be a move cursor
-    draggableRegion.setCursor(Qt.SizeAllCursor)
+    draggableRegionWidget.setCursor(Qt.SizeAllCursor)
     # first save the position of the mouse with titleBarX and titleBarY
-    draggableRegion.mousePressEvent = lambda event: saveMousePos(event, window)
+    draggableRegionWidget.mousePressEvent = lambda event: saveMousePos(event)
     # then move the window to the new position
-    draggableRegion.mouseMoveEvent = lambda event: moveWindow(
+    draggableRegionWidget.mouseMoveEvent = lambda event: moveWindow(
         event, window)
 
 
 # saveMousePos -
 # Saves the position of the mouse when the mouse is pressed
-def saveMousePos(event, window):
+def saveMousePos(event):
     global titleBarX, titleBarY
     titleBarX = event.globalX()
     titleBarY = event.globalY()
@@ -259,31 +256,34 @@ def main():
     vBox = QVBoxLayout(window)
 
     # Create a custom title bar that be used to close the program
-    titleBar = QWidget(objectName="titleBar")
-    titleBar.setFixedHeight(30)
-    titleBarLayout = QHBoxLayout(objectName="titleBarLayout")
-    titleBar.setLayout(titleBarLayout)
+    draggableBar = QWidget(objectName="draggableBar")
+    draggableBar.setFixedHeight(30)
+    dragBarHbox = QHBoxLayout(objectName="titleBarLayout")
+    draggableBar.setLayout(dragBarHbox)
     # Create application icon to go in the title bar
     appIcon = QLabel()
     appIcon.setPixmap(QPixmap("res/icons/laugh.png").scaled(
         30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-    titleBarLayout.addWidget(appIcon)
-    # Create title section of the title bar, which is draggable
-    titleSection = QWidget(objectName="titleSection")
-    titleSectionLayout = QHBoxLayout(objectName="titleSectionLayout")
-    titleSection.setLayout(titleSectionLayout)
-    titleText = QLabel("MugBox", objectName="titleText")
-    titleText.setEnabled(False)
-    titleSectionLayout.addWidget(titleText)
-    titleBarLayout.addWidget(titleSection)
-    # set its width to take up the rest of the title bar
-    titleSectionLayout.setStretch(0, 1)
-    titleText.setAlignment(Qt.AlignCenter)
-    # the title is slightly clipped at the bottom of the title bar, fix it
-    titleSectionLayout.setContentsMargins(0, 0, 0, 0)
+    dragBarHbox.addWidget(appIcon)
+    dragBarHbox.addStretch(1)
+    programNameText = QLabel("MugBox", objectName="titleText")
+    programNameText.setAlignment(Qt.AlignCenter)
+    programNameText.setEnabled(False)
+    # programNameSectionLayout.addWidget(programNameText)
+    dragBarHbox.addWidget(programNameText)
+    dragBarHbox.addStretch(1)
     # Now we can make the title section draggable
-    addDragAbility(titleBar, window)
-    # FIXME: Only left half of title bar is draggable
+    addDragAbility(draggableBar, window)
+
+    # Separate the close and minimize buttons to avoid them also having the drag ability
+    fullBar = QWidget(objectName="fullBar")
+    fullBarHbox = QHBoxLayout()
+    fullBar.setLayout(fullBarHbox)
+    fullBarHbox.addWidget(draggableBar)
+    # Remove spacing between buttons in this hbox
+    fullBarHbox.setSpacing(0)
+    # Remove any padding or margins
+    fullBarHbox.setContentsMargins(0, 0, 0, 0)
 
     # Create a minimize button
     minimizeButton = QPushButton("—", objectName="minimizeButton")
@@ -292,27 +292,27 @@ def main():
     minimizeButton.clicked.connect(window.showMinimized)
     # Make the minimize action be animated
     minimizeButton.setProperty("animate", True)
-    titleBarLayout.addWidget(minimizeButton)
+    fullBarHbox.addWidget(minimizeButton)
     # Create a close button
     closeButton = QPushButton("✕", objectName="closeButton")
     closeButton.setProperty("class", "titleBarButton")
     closeButton.setFixedSize(30, 30)
     closeButton.clicked.connect(app.quit)
-    titleBarLayout.addWidget(closeButton)
-    # Align the close button to the right
-    titleBarLayout.setAlignment(Qt.AlignRight)
+    fullBarHbox.addWidget(closeButton)
     # the button still gets clipped off the bottom of the title bar, fix it
-    titleBarLayout.setContentsMargins(0, 0, 0, 0)
+    dragBarHbox.setContentsMargins(0, 0, 0, 0)
     # remove the padding between the minimize and close buttons
-    titleBarLayout.setSpacing(0)
+    dragBarHbox.setSpacing(0)
 
     # Put all 3 in a container which can be colored
     container = QWidget(objectName="container")
     containerLayout = QVBoxLayout(objectName="containerLayout")
     container.setLayout(containerLayout)
-    containerLayout.addWidget(titleBar)
+    containerLayout.addWidget(fullBar)
     containerLayout.addWidget(scrollArea)
     containerLayout.addWidget(addHundredButton)
+    # Remove any padding or margins on the top of the container
+    containerLayout.setContentsMargins(5, 0, 5, 5)
     vBox.addWidget(container)
 
     # Make the window semi-transparent
@@ -325,6 +325,7 @@ def main():
 
     # Show the window and run the application
     window.show()
+    print(f"Size of Add Hundred Button: {addHundredButton.size()}")
     app.exec_()
 
 
@@ -335,7 +336,7 @@ if __name__ == '__main__':
 # Features to add:
 # DONE: Make custom look with semi-transparent background
 # DONE: Make custom title bar
-# FIXME: Make title bar properly draggable, currently only the left half is draggable
+# DONE: Make title bar properly draggable, currently only the left half is draggable
 # TODO: Add a context menu to the items in the grid, so that you can right click on an item and open it in app, in explorer, or delete it
 # TODO: Add a search bar
 # TODO: Add ability to filter by folder names
