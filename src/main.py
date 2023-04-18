@@ -16,6 +16,9 @@ placementX = int((screenX/2) - (windowX/2))
 placementY = int((screenY/2) - (windowY/2))
 # Path to folder holding all other folders
 mugPath = "M:\OneDrive\Mugs\\"
+iconPath = "res\icons\Mugbox_Icon_4"
+darkIcon = iconPath+".png"
+lightIcon = iconPath+"_light.png"
 listLimit = 100
 thumnailSize = 190
 titleBarX = 0
@@ -53,14 +56,14 @@ def openItem(item, isRelative=False):
 # addHundred -
 # Adds 100 more items to the list
 
+# TODO: Change instead of adding 100, add the number of items that will fill our chosen number of columns and rows
+
 
 def addHundred(givenGrid, givenOrderedFiles):
     global listLimit
     i = listLimit - 100
     while i < listLimit:
         file = givenOrderedFiles.pop(0).split("\Mugs\\", 1)[1]
-        # givenListWidget.addItem(QListWidgetItem(
-        #     str(i+1) + ". " + file))
         addThumbnail(givenGrid, file, i, 7)
         i += 1
     listLimit += 100
@@ -230,6 +233,8 @@ def main():
 
     # Create a grid layout
     grid = QGridLayout()
+    grid.setHorizontalSpacing(0)
+    grid.setVerticalSpacing(2)
     # Creat scroll area for grid
     scrollArea = QScrollArea(objectName="scrollArea")
     scrollArea.setWidgetResizable(True)
@@ -262,14 +267,13 @@ def main():
     draggableBar.setLayout(dragBarHbox)
     # Create application icon to go in the title bar
     appIcon = QLabel()
-    appIcon.setPixmap(QPixmap("res/icons/laugh.png").scaled(
+    appIcon.setPixmap(QPixmap(darkIcon).scaled(
         30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation))
     dragBarHbox.addWidget(appIcon)
     dragBarHbox.addStretch(1)
     programNameText = QLabel("MugBox", objectName="titleText")
     programNameText.setAlignment(Qt.AlignCenter)
     programNameText.setEnabled(False)
-    # programNameSectionLayout.addWidget(programNameText)
     dragBarHbox.addWidget(programNameText)
     dragBarHbox.addStretch(1)
     # Now we can make the title section draggable
@@ -304,13 +308,27 @@ def main():
     # remove the padding between the minimize and close buttons
     dragBarHbox.setSpacing(0)
 
+    # Create a hamburger menu button to put on the left side of the screen
+    hamburgerMenuButton = QPushButton("☰", objectName="hamburgerMenuButton")
+    hamburgerMenuButton.setFixedSize(30, 30)
+    # Make hamburger button print a message when clicked
+    hamburgerMenuButton.clicked.connect(
+        lambda: print("Hamburger menu button clicked"))
+
+    # Create hbox holding hamburger menu on the left and the scrollarea and add hundred button on the right
+    hbox = QHBoxLayout()
+    hbox.addWidget(hamburgerMenuButton)
+    vScrollBox = QVBoxLayout()
+    vScrollBox.addWidget(scrollArea)
+    vScrollBox.addWidget(addHundredButton)
+    hbox.addLayout(vScrollBox)
+
     # Put all 3 in a container which can be colored
     container = QWidget(objectName="container")
     containerLayout = QVBoxLayout(objectName="containerLayout")
     container.setLayout(containerLayout)
     containerLayout.addWidget(fullBar)
-    containerLayout.addWidget(scrollArea)
-    containerLayout.addWidget(addHundredButton)
+    containerLayout.addLayout(hbox)
     # Remove any padding or margins on the top of the container
     containerLayout.setContentsMargins(5, 0, 5, 5)
     vBox.addWidget(container)
@@ -320,12 +338,12 @@ def main():
     window.setWindowFlags(Qt.FramelessWindowHint)
 
     # Set application icon for the taskbar
-    app.setWindowIcon(QIcon("res/icons/laugh.png"))
+    app.setWindowIcon(QIcon(lightIcon))
     app.setStyleSheet(open("res/styles/style.css").read())
 
     # Show the window and run the application
     window.show()
-    print(f"Size of Add Hundred Button: {addHundredButton.size()}")
+    # print(f"Size of Add Hundred Button: {addHundredButton.size()}")
     app.exec_()
 
 
@@ -359,3 +377,11 @@ if __name__ == '__main__':
 # FIXME: Fix image corners and image in general being pixelated
 # TODO: Center the images in the grid
 # TODO: Look into making background acrylic or blur
+# TODO: Make program be resizable and have grid be responsive to window size
+# TODO: Make left side drawer that can be opened and closed when clicking on the hamburger menu
+# TODO: Make program work with Windows 11's snapping feature
+# TODO: Make it so dragging an image from the built in image viewer will drop it to wherever the cursor is, such as discord
+# TODO: Make a custom placeholder thumbnail for images of type .csp, .pdn, .psd, and krita files
+# DONE: Create a custom application icon
+
+# IDEA: Create better version of tiermaker site to add images in real time, click to zoom in, and link to each other
