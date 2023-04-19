@@ -1,5 +1,5 @@
 /* Application Container */
-QWidget#container {
+QWidget#outerContainer {
     background-color: rgba(30, 31, 34, 0.9);
     border-radius: 8px;
 }
@@ -8,6 +8,7 @@ QWidget#container {
 /* QWidget#draggableBar {
     background-color: rgba(255, 166, 0, 0.377);
 } */
+
 .titleBarButton {
     /* Slightly lighter than titlebar by default */
     background-color: transparent;
@@ -24,6 +25,11 @@ QPushButton#minimizeButton:hover {
 
 QPushButton#closeButton:hover {
     background-color: rgba(212, 37, 37, 0.7);
+    color: white;
+}
+
+QPushButton#hamburgerMenuButton:hover {
+    background-color: rgba(255, 255, 255, 0.2);
     color: white;
 }
 

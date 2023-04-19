@@ -172,8 +172,6 @@ def addDimentions(givenImage, givenSize):
 def addDragAbility(draggableRegionWidget, window):
     # Set the draggable region's position to be the same as the draggable region widget
     draggableRegionWidget.move(draggableRegionWidget.pos())
-    # Set the draggable region's cursor to be a move cursor
-    draggableRegionWidget.setCursor(Qt.SizeAllCursor)
     # first save the position of the mouse with titleBarX and titleBarY
     draggableRegionWidget.mousePressEvent = lambda event: saveMousePos(event)
     # then move the window to the new position
@@ -254,7 +252,7 @@ def main():
     # Connect the button to the addHundred function
     addHundredButton.clicked.connect(
         lambda: addHundred(grid, newestOrderedFiles))
-    # addHundredButton.setFixedSize(100, 20)  # Set the size of the button
+    # Set the size of the button
     addHundredButton.setFixedHeight(60)
 
     # Create a vertical box layout and add the list and button to it
@@ -265,10 +263,13 @@ def main():
     draggableBar.setFixedHeight(30)
     dragBarHbox = QHBoxLayout(objectName="titleBarLayout")
     draggableBar.setLayout(dragBarHbox)
+    # Add some space to the left of the icon
+    dragBarHbox.addSpacing(10)
+
     # Create application icon to go in the title bar
     appIcon = QLabel()
     appIcon.setPixmap(QPixmap(darkIcon).scaled(
-        30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation))
     dragBarHbox.addWidget(appIcon)
     dragBarHbox.addStretch(1)
     programNameText = QLabel("MugBox", objectName="titleText")
@@ -287,7 +288,7 @@ def main():
     # Remove spacing between buttons in this hbox
     fullBarHbox.setSpacing(0)
     # Remove any padding or margins
-    fullBarHbox.setContentsMargins(0, 0, 0, 0)
+    fullBarHbox.setContentsMargins(0, 0, 0, 0)  # left, top, right, bottom
 
     # Create a minimize button
     minimizeButton = QPushButton("—", objectName="minimizeButton")
@@ -310,6 +311,7 @@ def main():
 
     # Create a hamburger menu button to put on the left side of the screen
     hamburgerMenuButton = QPushButton("☰", objectName="hamburgerMenuButton")
+    hamburgerMenuButton.setProperty("class", "titleBarButton")
     hamburgerMenuButton.setFixedSize(30, 30)
     # Make hamburger button print a message when clicked
     hamburgerMenuButton.clicked.connect(
@@ -321,17 +323,31 @@ def main():
     vScrollBox = QVBoxLayout()
     vScrollBox.addWidget(scrollArea)
     vScrollBox.addWidget(addHundredButton)
+    vScrollBox.setSpacing(10)
     hbox.addLayout(vScrollBox)
+    # Align the hamburger menu button to the top left
+    hbox.setAlignment(hamburgerMenuButton, Qt.AlignTop)
+    # Remove spacing between buttons in this hbox
+    hbox.setSpacing(0)
 
     # Put all 3 in a container which can be colored
     container = QWidget(objectName="container")
     containerLayout = QVBoxLayout(objectName="containerLayout")
     container.setLayout(containerLayout)
-    containerLayout.addWidget(fullBar)
+    # containerLayout.addWidget(fullBar)
     containerLayout.addLayout(hbox)
     # Remove any padding or margins on the top of the container
-    containerLayout.setContentsMargins(5, 0, 5, 5)
-    vBox.addWidget(container)
+    containerLayout.setContentsMargins(
+        5, 0, 10, 10)  # left, top, right, bottom
+
+    outerContainer = QWidget(objectName="outerContainer")
+    outerContainerLayout = QVBoxLayout(objectName="outerContainerLayout")
+    outerContainer.setLayout(outerContainerLayout)
+    outerContainerLayout.addWidget(fullBar)
+    outerContainerLayout.addWidget(container)
+    outerContainerLayout.setContentsMargins(0, 0, 0, 0)
+    outerContainerLayout.setSpacing(0)
+    vBox.addWidget(outerContainer)
 
     # Make the window semi-transparent
     window.setAttribute(Qt.WA_TranslucentBackground, True)
