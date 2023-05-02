@@ -17,7 +17,9 @@ QWidget#outerContainer {
     font-size: 20px;
 }
 
-QPushButton#minimizeButton:hover {
+QPushButton#minimizeButton:hover,
+QPushButton#hamburgerMenuOpenButton:hover,
+QPushButton#hamburgerMenuCloseButton:hover {
     /* Make slightly lighter than titlebar's color */
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
@@ -28,9 +30,9 @@ QPushButton#closeButton:hover {
     color: white;
 }
 
-QPushButton#hamburgerMenuButton:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
+.menuLabel {
+    color: rgba(122, 122, 122, 1);
+    font-size: 20px;
 }
 
 /* QWidget#titleSection {
@@ -43,7 +45,7 @@ QLabel#titleText {
 }
 
 /* Scroll Area - Central area of the grid */
-QScrollArea#scrollArea {
+QScrollArea {
     background-color: transparent; /* ScrollArea background */
     border: none;
 }

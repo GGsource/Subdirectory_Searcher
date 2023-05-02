@@ -202,6 +202,34 @@ def moveWindow(event, window):
     titleBarX = newX
     titleBarY = newY
 
+# populateMenu -
+# Fills out the menu with a scrollable list of all the top level folders inside the root folder
+
+
+def populateMenu(containerLayout):
+    # Create a list of all the top level folders inside the root folder
+    folders = os.listdir(mugPath)
+    newContainer = QWidget()
+    initializeWidget(newContainer, folders)
+    containerLayout.addWidget(newContainer)
+
+def initializeWidget(self, items):
+    listBox = QVBoxLayout(self)
+    self.setLayout(listBox)
+
+    scroll = QScrollArea(self)
+    listBox.addWidget(scroll)
+    scroll.setWidgetResizable(True)
+    scrollContent = QWidget(scroll)
+
+    scrollLayout = QVBoxLayout(scrollContent)
+    scrollContent.setLayout(scrollLayout)
+    for item in items:
+        itemLabel = QLabel(item)
+        scrollLayout.addWidget(itemLabel)
+    scroll.setWidget(scrollContent)
+
+
 #############################################################################################
 #############################################################################################
 
@@ -309,26 +337,48 @@ def main():
     # remove the padding between the minimize and close buttons
     dragBarHbox.setSpacing(0)
 
-    # Create a hamburger menu button to put on the left side of the screen
-    hamburgerMenuButton = QPushButton("☰", objectName="hamburgerMenuButton")
-    hamburgerMenuButton.setProperty("class", "titleBarButton")
-    hamburgerMenuButton.setFixedSize(30, 30)
-    # Make hamburger button print a message when clicked
-    hamburgerMenuButton.clicked.connect(
-        lambda: print("Hamburger menu button clicked"))
+    # Create a hamburger menu button to open the drawer menu
+    hamburgerMenuOpenButton = QPushButton(
+        "☰", objectName="hamburgerMenuOpenButton")
+    hamburgerMenuOpenButton.setProperty("class", "titleBarButton")
+    hamburgerMenuOpenButton.setFixedSize(30, 30)
+    # Create a back arrow menu button to close the drawer menu
+    hamburgerMenuCloseButton = QPushButton(
+        "◀", objectName="hamburgerMenuCloseButton")
+    hamburgerMenuCloseButton.setProperty("class", "titleBarButton")
+    hamburgerMenuCloseButton.setFixedSize(30, 30)
 
     # Create hbox holding hamburger menu on the left and the scrollarea and add hundred button on the right
     hbox = QHBoxLayout()
-    hbox.addWidget(hamburgerMenuButton)
+    hbox.addWidget(hamburgerMenuOpenButton)
+    vMenu = QWidget(objectName="vMenu")
+    vMenuBox = QVBoxLayout()
+    vMenuBox.setContentsMargins(0, 0, 0, 0)
+    vMenu.setLayout(vMenuBox)
+    vMenuBox.addWidget(hamburgerMenuCloseButton)
+    vMenu.setFixedWidth(int(windowY/4))
+    populateMenu(vMenuBox)
+    hbox.addWidget(vMenu)
+    vMenu.hide()
     vScrollBox = QVBoxLayout()
     vScrollBox.addWidget(scrollArea)
     vScrollBox.addWidget(addHundredButton)
     vScrollBox.setSpacing(10)
     hbox.addLayout(vScrollBox)
     # Align the hamburger menu button to the top left
-    hbox.setAlignment(hamburgerMenuButton, Qt.AlignTop)
+    hbox.setAlignment(hamburgerMenuOpenButton, Qt.AlignTop)
     # Remove spacing between buttons in this hbox
     hbox.setSpacing(0)
+
+    # Make hamburger button show menu when clicked
+    hamburgerMenuOpenButton.clicked.connect(
+        lambda: (hamburgerMenuOpenButton.hide(),
+                 vMenu.show(),
+                 ))
+    # Make hamburger button hide menu when clicked
+    hamburgerMenuCloseButton.clicked.connect(
+        lambda: (hamburgerMenuOpenButton.show(),
+                 vMenu.hide(),))
 
     # Put all 3 in a container which can be colored
     container = QWidget(objectName="container")
