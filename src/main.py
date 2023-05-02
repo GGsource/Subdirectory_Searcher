@@ -19,10 +19,12 @@ mugPath = "M:\OneDrive\Mugs\\"
 iconPath = "res\icons\Mugbox_Icon_4"
 darkIcon = iconPath+".png"
 lightIcon = iconPath+"_light.png"
-listLimit = 100
+listColumnCount = 7
+listLimit = listColumnCount * 10
 thumnailSize = 190
 titleBarX = 0
 titleBarY = 0
+loop = QEventLoop()
 
 #############################################################################################
 #############################################################################################
@@ -59,37 +61,36 @@ def openItem(item, isRelative=False):
 # TODO: Change instead of adding 100, add the number of items that will fill our chosen number of columns and rows
 
 
-def addHundred(givenGrid, givenOrderedFiles):
+def addImagesToGrid(imageCount, givenGrid, givenOrderedFiles, isExpedited=False):
     global listLimit
-    i = listLimit - 100
+    i = listLimit - imageCount
     while i < listLimit:
         file = givenOrderedFiles.pop(0).split("\Mugs\\", 1)[1]
-        addThumbnail(givenGrid, file, i, 7)
-        i += 1
-    listLimit += 100
+        if addThumbnail(givenGrid, file, i, listColumnCount, isExpedited):
+            i += 1
+    listLimit += imageCount
 
 # addThumbnail -
 # Adds a thumbnail to the grid
-
-
-def addThumbnail(givenGrid, givenFile, ndx, rowLen):
+def addThumbnail(givenGrid, givenFile, ndx, rowLen, isExpedited=False):
     fullPath = mugPath+givenFile
+    fileExtension = fullPath.split(".")[-1]
+    supportedFileTypes = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "jfif"]
+    if (fileExtension not in supportedFileTypes):
+        print(f"Found unsupported file type for file: {givenFile}. Skipping...")
+        return False
     # Create an instance of an image from file in img folder
     image = QPixmap(fullPath)
-
-    # Save the image's original size to be used later
+    # Save the image's original size to show as info later
     originalSize = image.size()
-
     # Crop the image to a square, centered on the image
     image = cropAtCenter(image)
     # Resize the image to thumbnailsize x thumbnailsize
     image = image.scaled(thumnailSize, thumnailSize, Qt.KeepAspectRatio)
     # Add the image's extension type to the bottom right corner of the image
     image = addImageType(image, fullPath.split(".")[-1])
-
     # Now, add the original dimensions right above the extension type, also with a dark blue rectangle behind it
-    image = addDimentions(image, originalSize)
-
+    image = addDimensions(image, originalSize)
     # Modify the image to have rounded corners
     image = roundImage(image, 15)
     # Add the image to the grid by creating a label and setting the image
@@ -99,9 +100,12 @@ def addThumbnail(givenGrid, givenFile, ndx, rowLen):
     # Connect the label to the openItem function when double clicked
     imageLabel.mouseDoubleClickEvent = lambda event: openItem(
         imageLabel.objectName(), True)
-
-    # Add the thumbnails in rows of length 5
+    # Add the thumbnails in rows of length given
     givenGrid.addWidget(imageLabel, int(ndx/rowLen), ndx % rowLen)
+    if (not isExpedited):
+        QTimer.singleShot(50, loop.quit)
+        loop.exec_()
+    return True
 
 # cropAtCenter -
 # Crops the image to a square, centered on the image, keeping in mind whether the image is landscape or portrait
@@ -153,7 +157,7 @@ def addImageType(givenImage, givenType):
 # Adds the original dimensions right above the extension type, also with a dark blue rectangle behind it
 
 
-def addDimentions(givenImage, givenSize):
+def addDimensions(givenImage, givenSize):
     painter = QPainter(givenImage)
     painter.setPen(QPen(QColor(0, 0, 0, 0)))
     painter.setBrush(QBrush(QColor(0, 0, 0, 100)))
@@ -271,15 +275,15 @@ def main():
     # Set the widget of the scroll area to the grid
     scrollArea.setWidget(client)
 
-    # Add the first 100 items to the list
-    addHundred(grid, newestOrderedFiles)
+    # Add the first 10 rows of items to the list
+    addImagesToGrid(listColumnCount * 10, grid, newestOrderedFiles, True)
 
     # Create a button to add 100 more items to the list
     addHundredButton = QPushButton(
-        parent=window, text="Add 100 more to list", objectName="addHundredButton")
+        parent=window, text="Load next 5 rows", objectName="addHundredButton")
     # Connect the button to the addHundred function
     addHundredButton.clicked.connect(
-        lambda: addHundred(grid, newestOrderedFiles))
+        lambda: addImagesToGrid(5 * listColumnCount, grid, newestOrderedFiles))
     # Set the size of the button
     addHundredButton.setFixedHeight(60)
 
