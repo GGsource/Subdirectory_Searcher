@@ -16,6 +16,7 @@ placementX = int((screenX/2) - (windowX/2))
 placementY = int((screenY/2) - (windowY/2))
 # Path to folder holding all other folders
 mugPath = "M:\OneDrive\Mugs\\"
+# mugPath = "M:\OneDrive\Mugs\Batgirl"
 iconPath = "res\icons\Mugbox_Icon_4"
 darkIcon = iconPath+".png"
 lightIcon = iconPath+"_light.png"
@@ -35,9 +36,8 @@ loop = QEventLoop()
 
 
 def getFiles():
-    listOfFiles = glob.glob(mugPath+"*\\*\\*\\*") + \
-        glob.glob(mugPath+"\\*\\*\\*") + \
-        glob.glob(mugPath+"\\*\\*")
+    # recursively get all files in the directory and subdirectories
+    listOfFiles = glob.glob(mugPath+"\\**\\*", recursive=True)
     # Exclude the folders
     listOfFiles = [file for file in listOfFiles if os.path.isfile(file)]
     return sorted(listOfFiles, key=os.path.getctime, reverse=True)
@@ -55,29 +55,34 @@ def openItem(item, isRelative=False):
     print(f"Opening: '{fullPath}'")
     os.startfile(fullPath, 'open')
 
-# addHundred -
-# Adds 100 more items to the list
-
-# TODO: Change instead of adding 100, add the number of items that will fill our chosen number of columns and rows
+# addImagesToGrid -
+# Adds more items to the list
 
 
-def addImagesToGrid(imageCount, givenGrid, givenOrderedFiles, isExpedited=False):
+def addImagesToGrid(imageCount, givenGrid: QGridLayout, givenOrderedFiles, isExpedited=False):
     global listLimit
     i = listLimit - imageCount
     while i < listLimit:
+        if (givenOrderedFiles == []):
+            print("No more images to add")
+            break
         file = givenOrderedFiles.pop(0).split("\Mugs\\", 1)[1]
+        # file = givenOrderedFiles.pop(0).split("\Mugs\Batgirl", 1)[1]
         if addThumbnail(givenGrid, file, i, listColumnCount, isExpedited):
             i += 1
     listLimit += imageCount
 
 # addThumbnail -
 # Adds a thumbnail to the grid
+
+
 def addThumbnail(givenGrid, givenFile, ndx, rowLen, isExpedited=False):
     fullPath = mugPath+givenFile
     fileExtension = fullPath.split(".")[-1]
     supportedFileTypes = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "jfif"]
     if (fileExtension not in supportedFileTypes):
-        print(f"Found unsupported file type for file: {givenFile}. Skipping...")
+        print(
+            f"Found unsupported '{fileExtension}' file type for: {givenFile}. Skipping...")
         return False
     # Create an instance of an image from file in img folder
     image = QPixmap(fullPath)
@@ -102,6 +107,7 @@ def addThumbnail(givenGrid, givenFile, ndx, rowLen, isExpedited=False):
         imageLabel.objectName(), True)
     # Add the thumbnails in rows of length given
     givenGrid.addWidget(imageLabel, int(ndx/rowLen), ndx % rowLen)
+    givenGrid.setColumnStretch(ndx % rowLen, 1)
     if (not isExpedited):
         QTimer.singleShot(50, loop.quit)
         loop.exec_()
@@ -217,6 +223,7 @@ def populateMenu(containerLayout):
     initializeWidget(newContainer, folders)
     containerLayout.addWidget(newContainer)
 
+
 def initializeWidget(self, items):
     listBox = QVBoxLayout(self)
     self.setLayout(listBox)
@@ -234,6 +241,17 @@ def initializeWidget(self, items):
     scroll.setWidget(scrollContent)
 
 
+def shrinkGrid(grid: QGridLayout):
+    # The hamburger menu is being opened so the grid has less space, so shrink the number of columns
+    # Do some shit
+    return
+
+
+def expandGrid(grid: QGridLayout):
+    # The hamburger menu is being closed so the grid has more space, so expand the number of columns
+    # Do some shit
+    return
+
 #############################################################################################
 #############################################################################################
 
@@ -250,16 +268,6 @@ def main():
 
     # Create a list of the most recent files
     newestOrderedFiles = getFiles()  # Get a list of the most recent files
-    # Create an instance of QtWidgets.QListWidget
-    # listWidget = QListWidget(window)
-    # # Set the list's width to be 1/4th of the window's width
-    # listWidget.setFixedWidth(int(window.width()/4))
-    # # Create an instance of QtWidgets.QScrollBar
-    # scrollBar = QScrollBar(window)
-    # # Set the vertical scroll bar to the one we just created
-    # listWidget.setVerticalScrollBar(scrollBar)
-    # # Connect item activation to the openItem function
-    # listWidget.itemActivated.connect(openItem)
 
     # Create a grid layout
     grid = QGridLayout()
@@ -378,11 +386,14 @@ def main():
     hamburgerMenuOpenButton.clicked.connect(
         lambda: (hamburgerMenuOpenButton.hide(),
                  vMenu.show(),
+                 shrinkGrid(grid)
                  ))
     # Make hamburger button hide menu when clicked
     hamburgerMenuCloseButton.clicked.connect(
         lambda: (hamburgerMenuOpenButton.show(),
-                 vMenu.hide(),))
+                 vMenu.hide(),
+                 expandGrid(grid)
+                 ))
 
     # Put all 3 in a container which can be colored
     container = QWidget(objectName="container")
@@ -432,7 +443,7 @@ if __name__ == '__main__':
 # TODO: Add ability to sort by folder name
 # TODO: Replace opening image with a built in image viewer
 # DONE: Exclude directories from the list, otherwise they show up as blank images
-# FIXME: Empty images are still being added to the list, look into this
+# DONE: Empty images are still being added to the list, look into this // It was unsupported file types such as .clip
 # TODO: Make gifs auto-play
 # TODO: Put play button over videos if applicable
 # TODO: Add "copy" button to context menu to copy the image to the clipboard
@@ -448,10 +459,11 @@ if __name__ == '__main__':
 # TODO: Center the images in the grid
 # TODO: Look into making background acrylic or blur
 # TODO: Make program be resizable and have grid be responsive to window size
-# TODO: Make left side drawer that can be opened and closed when clicking on the hamburger menu
+# DONE: Make left side drawer that can be opened and closed when clicking on the hamburger menu
 # TODO: Make program work with Windows 11's snapping feature
 # TODO: Make it so dragging an image from the built in image viewer will drop it to wherever the cursor is, such as discord
-# TODO: Make a custom placeholder thumbnail for images of type .csp, .pdn, .psd, and krita files
+# TODO: Make a custom placeholder thumbnail for images of type .clip, .pdn, .psd, and krita files
 # DONE: Create a custom application icon
+# DONE: Make grid place images one at a time instead of all at once
 
 # IDEA: Create better version of tiermaker site to add images in real time, click to zoom in, and link to each other
